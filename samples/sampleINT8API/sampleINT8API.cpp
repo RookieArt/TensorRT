@@ -648,7 +648,7 @@ sample::Logger::TestResult SampleINT8API::infer()
 
     // Create CUDA stream for the execution of this inference
     cudaStream_t stream;
-    CHECK(cudaStreamCreate(&stream));
+    TRT_CUDA_CHECK(cudaStreamCreate(&stream));
 
     // Asynchronously copy data from host input buffers to device input buffers
     buffers.copyInputToDeviceAsync(stream);
@@ -663,10 +663,10 @@ sample::Logger::TestResult SampleINT8API::infer()
     buffers.copyOutputToHostAsync(stream);
 
     // Wait for the work in the stream to complete
-    CHECK(cudaStreamSynchronize(stream));
+    TRT_CUDA_CHECK(cudaStreamSynchronize(stream));
 
     // Release stream
-    CHECK(cudaStreamDestroy(stream));
+    TRT_CUDA_CHECK(cudaStreamDestroy(stream));
 
     // Check and print the output of the inference
     return verifyOutput(buffers) ? sample::Logger::TestResult::kRUNNING : sample::Logger::TestResult::kFAILED;

@@ -413,9 +413,9 @@ private:
             if ((copyInput && tenosrIsInput(n.first)) || (!copyInput && !tenosrIsInput(n.first)))
             {
                 if (async)
-                    CHECK(cudaMemcpyAsync(dstPtr, srcPtr, byteSize, memcpyType, stream));
+                    TRT_CUDA_CHECK(cudaMemcpyAsync(dstPtr, srcPtr, byteSize, memcpyType, stream));
                 else
-                    CHECK(cudaMemcpy(dstPtr, srcPtr, byteSize, memcpyType));
+                    TRT_CUDA_CHECK(cudaMemcpy(dstPtr, srcPtr, byteSize, memcpyType));
             }
         }
     }

@@ -899,7 +899,7 @@ bool SampleCharRNNBase::infer()
 
     // create stream for trt execution
     cudaStream_t stream;
-    CHECK(cudaStreamCreate(&stream));
+    TRT_CUDA_CHECK(cudaStreamCreate(&stream));
 
     // Set sequence lengths to maximum
     int* sequenceLengthIn
@@ -953,7 +953,7 @@ bool SampleCharRNNBase::infer()
     sample::gLogInfo << "Received: " << genstr.substr(inputSentence.size()) << std::endl;
 
     // release the stream
-    CHECK(cudaStreamDestroy(stream));
+    TRT_CUDA_CHECK(cudaStreamDestroy(stream));
 
     return genstr == (inputSentence + expected);
 }
@@ -1000,7 +1000,7 @@ bool SampleCharRNNBase::stepOnce(
     // Asynchronously copy data from device output buffers to host output buffers
     buffers.copyOutputToHostAsync(stream);
 
-    CHECK(cudaStreamSynchronize(stream));
+    TRT_CUDA_CHECK(cudaStreamSynchronize(stream));
     return true;
 }
 

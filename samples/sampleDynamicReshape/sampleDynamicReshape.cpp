@@ -392,7 +392,7 @@ bool SampleDynamicReshape::infer()
 
     Dims inputDims = loadPGMFile(locateFile(std::to_string(digit) + ".pgm", mParams.dataDirs));
     mInput.deviceBuffer.resize(inputDims);
-    CHECK(cudaMemcpy(
+    TRT_CUDA_CHECK(cudaMemcpy(
         mInput.deviceBuffer.data(), mInput.hostBuffer.data(), mInput.hostBuffer.nbBytes(), cudaMemcpyHostToDevice));
 
     // Set the input size for the preprocessor
@@ -422,7 +422,7 @@ bool SampleDynamicReshape::infer()
     }
 
     // Copy the outputs back to the host and verify the output.
-    CHECK(cudaMemcpy(mOutput.hostBuffer.data(), mOutput.deviceBuffer.data(), mOutput.deviceBuffer.nbBytes(),
+    TRT_CUDA_CHECK(cudaMemcpy(mOutput.hostBuffer.data(), mOutput.deviceBuffer.data(), mOutput.deviceBuffer.nbBytes(),
         cudaMemcpyDeviceToHost));
     return validateOutput(digit);
 }

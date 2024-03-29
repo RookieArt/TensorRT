@@ -28,6 +28,7 @@ cc_library(
     "common/*.cpp",
   ],
   deps = [
+    ":utils",
     "//third_party/cuda/BUILD:cuda",
     "//third_party/cuda/BUILD:tensorrt",
     "//playground/gitlab/cpp_codes/tutorials/ray/cpp_demo/3rdparty/BUILD:nvtx",

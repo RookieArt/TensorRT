@@ -37,8 +37,8 @@
 #include <dlfcn.h>
 #endif
 
-#undef CHECK
-#define CHECK(status)                                                                                                  \
+#undef TRT_CUDA_CHECK
+#define TRT_CUDA_CHECK(status)                                                                                                  \
     do                                                                                                                 \
     {                                                                                                                  \
         auto ret = (status);                                                                                           \
@@ -145,7 +145,7 @@ public:
     void beginCapture(cudaStream_t& stream)
     {
         // cudaStreamCaptureModeGlobal is the only allowed mode in SAFE CUDA
-        CHECK(cudaStreamBeginCapture(stream, cudaStreamCaptureModeGlobal));
+        TRT_CUDA_CHECK(cudaStreamBeginCapture(stream, cudaStreamCaptureModeGlobal));
     }
 
     bool launch(cudaStream_t& stream)
@@ -155,9 +155,9 @@ public:
 
     void endCapture(cudaStream_t& stream)
     {
-        CHECK(cudaStreamEndCapture(stream, &mGraph));
-        CHECK(cudaGraphInstantiate(&mGraphExec, mGraph, nullptr, nullptr, 0));
-        CHECK(cudaGraphDestroy(mGraph));
+        TRT_CUDA_CHECK(cudaStreamEndCapture(stream, &mGraph));
+        TRT_CUDA_CHECK(cudaGraphInstantiate(&mGraphExec, mGraph, nullptr, nullptr, 0));
+        TRT_CUDA_CHECK(cudaGraphDestroy(mGraph));
     }
 
     void endCaptureOnError(cudaStream_t& stream)
@@ -176,7 +176,7 @@ public:
         {
             SAFE_ASSERT(ret == cudaSuccess);
             SAFE_ASSERT(mGraph != nullptr);
-            CHECK(cudaGraphDestroy(mGraph));
+            TRT_CUDA_CHECK(cudaGraphDestroy(mGraph));
             mGraph = nullptr;
         }
         // Clean up any CUDA error.

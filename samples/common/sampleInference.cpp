@@ -287,7 +287,7 @@ bool setUpInference(InferenceEnvironment& iEnv, InferenceOptions const& inferenc
     }
 
     cudaStream_t setOptProfileStream;
-    CHECK(cudaStreamCreate(&setOptProfileStream));
+    TRT_CUDA_CHECK(cudaStreamCreate(&setOptProfileStream));
 
     for (int32_t s = 0; s < inference.infStreams; ++s)
     {
@@ -305,7 +305,7 @@ bool setUpInference(InferenceEnvironment& iEnv, InferenceOptions const& inferenc
         ec->setPersistentCacheLimit(persistentCacheLimit);
 
         auto setProfile = ec->setOptimizationProfileAsync(inference.optProfileIndex, setOptProfileStream);
-        CHECK(cudaStreamSynchronize(setOptProfileStream));
+        TRT_CUDA_CHECK(cudaStreamSynchronize(setOptProfileStream));
 
         if (!setProfile)
         {
@@ -326,7 +326,7 @@ bool setUpInference(InferenceEnvironment& iEnv, InferenceOptions const& inferenc
         iEnv.bindings.emplace_back(new Bindings(useManagedMemory));
     }
 
-    CHECK(cudaStreamDestroy(setOptProfileStream));
+    TRT_CUDA_CHECK(cudaStreamDestroy(setOptProfileStream));
 
     if (iEnv.profiler)
     {

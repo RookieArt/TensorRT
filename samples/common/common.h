@@ -95,7 +95,7 @@ template <typename T, typename T_>
 OBJ_GUARD(T)
 makeObjGuard(T_* t)
 {
-    CHECK(!(std::is_base_of<T, T_>::value || std::is_same<T, T_>::value));
+    TRT_CUDA_CHECK(!(std::is_base_of<T, T_>::value || std::is_same<T, T_>::value));
     auto deleter = [](T* t) { delete t; };
     return std::unique_ptr<T, decltype(deleter)>{static_cast<T*>(t), deleter};
 }
@@ -343,7 +343,7 @@ using ByteMemory = TypedHostMemory<uint8_t, nvinfer1::DataType::kINT8>;
 inline void* safeCudaMalloc(size_t memSize)
 {
     void* deviceMem;
-    CHECK(cudaMalloc(&deviceMem, memSize));
+    TRT_CUDA_CHECK(cudaMalloc(&deviceMem, memSize));
     if (deviceMem == nullptr)
     {
         std::cerr << "Out of memory" << std::endl;
@@ -811,24 +811,24 @@ public:
     explicit GpuTimer(cudaStream_t stream)
         : mStream(stream)
     {
-        CHECK(cudaEventCreate(&mStart));
-        CHECK(cudaEventCreate(&mStop));
+        TRT_CUDA_CHECK(cudaEventCreate(&mStart));
+        TRT_CUDA_CHECK(cudaEventCreate(&mStop));
     }
     ~GpuTimer()
     {
-        CHECK(cudaEventDestroy(mStart));
-        CHECK(cudaEventDestroy(mStop));
+        TRT_CUDA_CHECK(cudaEventDestroy(mStart));
+        TRT_CUDA_CHECK(cudaEventDestroy(mStop));
     }
     void start() override
     {
-        CHECK(cudaEventRecord(mStart, mStream));
+        TRT_CUDA_CHECK(cudaEventRecord(mStart, mStream));
     }
     void stop() override
     {
-        CHECK(cudaEventRecord(mStop, mStream));
+        TRT_CUDA_CHECK(cudaEventRecord(mStop, mStream));
         float ms{0.0F};
-        CHECK(cudaEventSynchronize(mStop));
-        CHECK(cudaEventElapsedTime(&ms, mStart, mStop));
+        TRT_CUDA_CHECK(cudaEventSynchronize(mStop));
+        TRT_CUDA_CHECK(cudaEventElapsedTime(&ms, mStart, mStop));
         mMs += ms;
     }
 
@@ -986,17 +986,17 @@ inline void initSafeCuda()
     // 3. CUDA context initialization. (Call cudaDeviceGetLimit or cuCtxCreate)
     size_t stackSizeLimit = 0;
     int32_t deviceIndex = 0;
-    CHECK(cudaGetDevice(&deviceIndex));
-    CHECK(cudaDeviceGetLimit(&stackSizeLimit, cudaLimitStackSize));
+    TRT_CUDA_CHECK(cudaGetDevice(&deviceIndex));
+    TRT_CUDA_CHECK(cudaDeviceGetLimit(&stackSizeLimit, cudaLimitStackSize));
 }
 
 inline int32_t getSMVersion()
 {
     int32_t deviceIndex = 0;
-    CHECK(cudaGetDevice(&deviceIndex));
+    TRT_CUDA_CHECK(cudaGetDevice(&deviceIndex));
     int32_t major, minor;
-    CHECK(cudaDeviceGetAttribute(&major, cudaDevAttrComputeCapabilityMajor, deviceIndex));
-    CHECK(cudaDeviceGetAttribute(&minor, cudaDevAttrComputeCapabilityMinor, deviceIndex));
+    TRT_CUDA_CHECK(cudaDeviceGetAttribute(&major, cudaDevAttrComputeCapabilityMajor, deviceIndex));
+    TRT_CUDA_CHECK(cudaDeviceGetAttribute(&minor, cudaDevAttrComputeCapabilityMinor, deviceIndex));
 
     return ((major << 8) | minor);
 }
@@ -1011,11 +1011,11 @@ inline bool isSMSafe()
 inline int32_t getMaxPersistentCacheSize()
 {
     int32_t deviceIndex{};
-    CHECK(cudaGetDevice(&deviceIndex));
+    TRT_CUDA_CHECK(cudaGetDevice(&deviceIndex));
 
     int32_t maxPersistentL2CacheSize;
 #if CUDART_VERSION >= 11030
-    CHECK(cudaDeviceGetAttribute(&maxPersistentL2CacheSize, cudaDevAttrMaxPersistingL2CacheSize, deviceIndex));
+    TRT_CUDA_CHECK(cudaDeviceGetAttribute(&maxPersistentL2CacheSize, cudaDevAttrMaxPersistingL2CacheSize, deviceIndex));
 #else
     maxPersistentL2CacheSize = 0;
 #endif

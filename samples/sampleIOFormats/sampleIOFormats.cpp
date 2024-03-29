@@ -65,8 +65,8 @@ template <typename T>
 std::shared_ptr<T> mallocCudaMem(size_t nbElems)
 {
     T* ptr = nullptr;
-    CHECK(cudaMalloc((void**) &ptr, sizeof(T) * nbElems));
-    return std::shared_ptr<T>(ptr, [](T* p) { CHECK(cudaFree(p)); });
+    TRT_CUDA_CHECK(cudaMalloc((void**) &ptr, sizeof(T) * nbElems));
+    return std::shared_ptr<T>(ptr, [](T* p) { TRT_CUDA_CHECK(cudaFree(p)); });
 }
 
 class BufferDesc
@@ -433,7 +433,7 @@ bool SampleIOFormats::infer(SampleBuffer& inputBuf, SampleBuffer& outputBuf)
     auto const devInput = mallocCudaMem<uint8_t>(inputBuf.getBufferSize());
     auto devOutput = mallocCudaMem<uint8_t>(outputBuf.getBufferSize());
 
-    CHECK(cudaMemcpy(devInput.get(), inputBuf.buffer, inputBuf.getBufferSize(), cudaMemcpyHostToDevice));
+    TRT_CUDA_CHECK(cudaMemcpy(devInput.get(), inputBuf.buffer, inputBuf.getBufferSize(), cudaMemcpyHostToDevice));
 
     auto context = SampleUniquePtr<nvinfer1::IExecutionContext>(mEngine->createExecutionContext());
     if (!context)
@@ -456,7 +456,7 @@ bool SampleIOFormats::infer(SampleBuffer& inputBuf, SampleBuffer& outputBuf)
 
     // Create CUDA stream for the execution of this inference.
     cudaStream_t stream;
-    CHECK(cudaStreamCreate(&stream));
+    TRT_CUDA_CHECK(cudaStreamCreate(&stream));
 
     // Asynchronously enqueue the inference work
     if (!context->enqueueV3(stream))
@@ -465,12 +465,12 @@ bool SampleIOFormats::infer(SampleBuffer& inputBuf, SampleBuffer& outputBuf)
     }
 
     // Wait for the work in the stream to complete
-    CHECK(cudaStreamSynchronize(stream));
+    TRT_CUDA_CHECK(cudaStreamSynchronize(stream));
 
     // Release stream
-    CHECK(cudaStreamDestroy(stream));
+    TRT_CUDA_CHECK(cudaStreamDestroy(stream));
 
-    CHECK(cudaMemcpy(outputBuf.buffer, devOutput.get(), outputBuf.getBufferSize(), cudaMemcpyDeviceToHost));
+    TRT_CUDA_CHECK(cudaMemcpy(outputBuf.buffer, devOutput.get(), outputBuf.getBufferSize(), cudaMemcpyDeviceToHost));
 
     return true;
 }
